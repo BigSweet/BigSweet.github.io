@@ -6,13 +6,13 @@
   <meta name="renderer" content="webkit">
   <meta http-equiv="X-UA-Compatible" content="IE=edge" >
   <link rel="dns-prefetch" href="http://yoursite.com">
-  <title>tinker热修复gradle接入 | Hexo</title>
+  <title>tinker热修复gradle接入 | BigSweet的小屋</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
   <meta name="description" content="本篇文章已授权微信公众号 guolin_blog （郭霖）独家发布 今天研究了一天的热修复，热修复，简单的来讲就是在不需要发包的情况下，修改你线上应用的bug，接入使用后对于我这种小白来说还是很神奇的，同时也考虑了一下，要不要接入我们的项目中，这样就不用因为一个小BUG而去再次发包了，不过，就算要接入项目中，也还有很多坑需要踩，tinker有俩种接入方式，一种命令行接入，一种是gradle接入，本">
 <meta property="og:type" content="article">
 <meta property="og:title" content="tinker热修复gradle接入">
 <meta property="og:url" content="http://yoursite.com/2018/03/12/tinker热修复gradle接入/index.html">
-<meta property="og:site_name" content="Hexo">
+<meta property="og:site_name" content="BigSweet的小屋">
 <meta property="og:description" content="本篇文章已授权微信公众号 guolin_blog （郭霖）独家发布 今天研究了一天的热修复，热修复，简单的来讲就是在不需要发包的情况下，修改你线上应用的bug，接入使用后对于我这种小白来说还是很神奇的，同时也考虑了一下，要不要接入我们的项目中，这样就不用因为一个小BUG而去再次发包了，不过，就算要接入项目中，也还有很多坑需要踩，tinker有俩种接入方式，一种命令行接入，一种是gradle接入，本">
 <meta property="og:image" content="http://img.blog.csdn.net/20170313165038089?watermark/2/text/aHR0cDovL2Jsb2cuY3Nkbi5uZXQvcXFfMTU1Mjc3MDk=/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70/gravity/SouthEast">
 <meta property="og:image" content="http://img.blog.csdn.net/20170313165151211?watermark/2/text/aHR0cDovL2Jsb2cuY3Nkbi5uZXQvcXFfMTU1Mjc3MDk=/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70/gravity/SouthEast">
@@ -25,7 +25,7 @@
 <meta name="twitter:description" content="本篇文章已授权微信公众号 guolin_blog （郭霖）独家发布 今天研究了一天的热修复，热修复，简单的来讲就是在不需要发包的情况下，修改你线上应用的bug，接入使用后对于我这种小白来说还是很神奇的，同时也考虑了一下，要不要接入我们的项目中，这样就不用因为一个小BUG而去再次发包了，不过，就算要接入项目中，也还有很多坑需要踩，tinker有俩种接入方式，一种命令行接入，一种是gradle接入，本">
 <meta name="twitter:image" content="http://img.blog.csdn.net/20170313165038089?watermark/2/text/aHR0cDovL2Jsb2cuY3Nkbi5uZXQvcXFfMTU1Mjc3MDk=/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70/gravity/SouthEast">
   
-    <link rel="alternative" href="/atom.xml" title="Hexo" type="application/atom+xml">
+    <link rel="alternative" href="/atom.xml" title="BigSweet的小屋" type="application/atom+xml">
   
   
     <link rel="icon" href="/favicon.png">
