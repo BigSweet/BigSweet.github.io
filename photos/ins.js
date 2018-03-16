@@ -119,7 +119,7 @@
           var minSrc = 'https://raw.githubusercontent.com/BigSweet/Blog/master/min_photos/' + data.link[i];
           var src = 'https://raw.githubusercontent.com/BigSweet/Blog/master/photos/' + data.link[i];
           var type = data.type[i];
-          var target = src + (type === 'video' ? '.mp4' : '.jpg');
+          var target = src
           src += '';
 
           liTmpl += '<figure class="thumb" itemprop="associatedMedia" itemscope="" itemtype="http://schema.org/ImageObject">\
