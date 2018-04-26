@@ -8,12 +8,16 @@
   <link rel="dns-prefetch" href="http://yoursite.com">
   <title>BigSweet的小屋</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-  <meta property="og:type" content="website">
+  <meta name="description" content="上篇文章写了GreenDao的基本使用，后来考虑了一下，发现还有封装的余地。所以我把初始化数据库的操作写到了基类中，这样就更加方便了,首先看下上篇的userdao要想得到dao，需要以下的几个基本步骤12345mHelper = new DaoMaster.DevOpenHelper(this, “swt-db”, null);       db = mHelper.getWritableData">
+<meta property="og:type" content="article">
 <meta property="og:title" content="BigSweet的小屋">
-<meta property="og:url" content="http://yoursite.com/index.html">
+<meta property="og:url" content="http://yoursite.com/2018/03/12/一行代码操作数据库GreenDao/index.html">
 <meta property="og:site_name" content="BigSweet的小屋">
+<meta property="og:description" content="上篇文章写了GreenDao的基本使用，后来考虑了一下，发现还有封装的余地。所以我把初始化数据库的操作写到了基类中，这样就更加方便了,首先看下上篇的userdao要想得到dao，需要以下的几个基本步骤12345mHelper = new DaoMaster.DevOpenHelper(this, “swt-db”, null);       db = mHelper.getWritableData">
+<meta property="og:updated_time" content="2018-04-26T03:34:56.639Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="BigSweet的小屋">
+<meta name="twitter:description" content="上篇文章写了GreenDao的基本使用，后来考虑了一下，发现还有封装的余地。所以我把初始化数据库的操作写到了基类中，这样就更加方便了,首先看下上篇的userdao要想得到dao，需要以下的几个基本步骤12345mHelper = new DaoMaster.DevOpenHelper(this, “swt-db”, null);       db = mHelper.getWritableData">
   
     <link rel="alternative" href="/atom.xml" title="BigSweet的小屋" type="application/atom+xml">
   
@@ -137,348 +141,7 @@
             <canvas data-colors="#eaeaea" data-sectionHeight="100" data-contentId="js-content" id="myCanvas1" class="anm-canvas"></canvas>
           </div>
           <div id="js-content" class="content-ll">
-            
-  
-    <article id="post-GreenDao3.0+库，轻松搞定安卓数据库操作" class="article article-type-post  article-index" itemscope itemprop="blogPost">
-  <div class="article-inner">
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <p>GreenDao是安卓的数据库操作库，它实现了ORM，ORM称为：对象关系映射<br>我把它简单的理解为用对象来操作数据库<br>比如我需要创建一个User名字的数据库表，我可以直接定义一个User类，里面加上俩个参数<br>age,name,导入GreenDao库后，我只需要在User类上面加上一个@Entity注解<br>像这样<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">@Entity</span><br><span class="line">public class User &#123;</span><br><span class="line">    @Id(autoincrement = true)</span><br><span class="line">    private Long id;</span><br><span class="line">    private String name;</span><br><span class="line">    private int age;</span><br></pre></td></tr></table></figure></p>
-<p>然后make一下项目，User表就生成了，同时表中带有age和name的属性，<br>再比如我们需要往表中插入一个数据，那么只需要<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">User user= new User(&quot;sweet&quot;,&quot;20&quot;);</span><br><span class="line">dao.insert(user);</span><br></pre></td></tr></table></figure></p>
-<p>这样就实现了数据的插入操作，怎么样是不是很简单？<br>这里有个dao对象是怎么来的呢？<br>好了，正式进入正文，首先回顾下我们以前使用sqlite操作数据库的时候是怎么样的<br>首先：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br></pre></td><td class="code"><pre><span class="line">package com.demo.swt.mystudyappshop.Wight;</span><br><span class="line"></span><br><span class="line">import android.content.Context;</span><br><span class="line">import android.database.sqlite.SQLiteDatabase;</span><br><span class="line">import android.database.sqlite.SQLiteOpenHelper;</span><br><span class="line"></span><br><span class="line">/**</span><br><span class="line"> * 介绍：这里写介绍</span><br><span class="line"> * 作者：sweet</span><br><span class="line"> * 邮箱：sunwentao@imcoming.cn</span><br><span class="line"> * 时间: 2017/2/10</span><br><span class="line"> */</span><br><span class="line"></span><br><span class="line">public class DatabaseHelper extends SQLiteOpenHelper &#123;</span><br><span class="line"></span><br><span class="line">    private static final int VERSION = 1;</span><br><span class="line"></span><br><span class="line">    //在SQLiteOepnHelper的子类当中，必须有该构造函数</span><br><span class="line">    public DatabaseHelper(Context context, String name, SQLiteDatabase.CursorFactory factory,</span><br><span class="line">                          int version) &#123;</span><br><span class="line">        //必须通过super调用父类当中的构造函数</span><br><span class="line">        super(context, name, factory, version);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    public DatabaseHelper(Context context, String name) &#123;</span><br><span class="line">        this(context, name, VERSION);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    public DatabaseHelper(Context context, String name, int version) &#123;</span><br><span class="line">        this(context, name, null, version);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    //该函数是在第一次创建数据库的时候执行,实际上是在第一次得到SQLiteDatabse对象的时候，才会调用这个方法</span><br><span class="line">    @Override</span><br><span class="line">    public void onCreate(SQLiteDatabase db) &#123;</span><br><span class="line">        System.out.println(&quot;create a Database&quot;);</span><br><span class="line">        //execSQL函数用于执行SQL语句</span><br><span class="line">        db.execSQL(&quot;create table user(id int,name varchar(20))&quot;);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    @Override</span><br><span class="line">    public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) &#123;</span><br><span class="line">        System.out.println(&quot;update a Database&quot;);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<p>我们需要创建一个helper类继承SQLiteOpenHelper 同时在里面定义数据库的版本号，同时还得自己写数据库语句<br>db.execSQL(“create table user(id int,name varchar(20))”);<br>这里有个db是SQLiteDatabase 的对象，<br>接下来创建好helper类之后<br>创建数据库<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">//创建一个DatabaseHelper对象</span><br><span class="line">           if (dbHelper == null) &#123;</span><br><span class="line">               dbHelper = new DatabaseHelper(SqliteDataBaseActivity.this, &quot;test_mars_db&quot;, 3);</span><br><span class="line">               //只有调用了DatabaseHelper对象的getReadableDatabase()方法，或者是getWritableDatabase()方法之后，才会创建，或打开一个数据库</span><br><span class="line">               db = dbHelper.getReadableDatabase();</span><br><span class="line">               db.getVersion();</span><br><span class="line">           &#125; else &#123;</span><br><span class="line">               dataview.setText(&quot;你已经创建过数据库&quot;);</span><br><span class="line">           &#125;</span><br></pre></td></tr></table></figure></p>
-<p>插入数据<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">if (dbHelper == null) &#123;</span><br><span class="line">               dataview.setText(&quot;请先更新数据库&quot;);</span><br><span class="line">           &#125; else &#123;</span><br><span class="line">               //生成ContentValues对象</span><br><span class="line">               ContentValues values = new ContentValues();</span><br><span class="line">               //想该对象当中插入键值对，其中键是列名，值是希望插入到这一列的值，值必须和数据库当中的数据类型一致</span><br><span class="line">               values.put(&quot;id&quot;, 1);</span><br><span class="line">               values.put(&quot;name&quot;, &quot;zhangsan&quot;);</span><br><span class="line">               //调用insert方法，就可以将数据插入到数据库当中</span><br><span class="line">               db.insert(&quot;user&quot;, null, values);</span><br><span class="line">           &#125;</span><br></pre></td></tr></table></figure></p>
-<p>大概就实列这俩个就可以看出，sqlite操作数据库远远没有我们使用greenDao库操作方便，<br>说了这么多，也对比了sqlite和greendao，分析了greendao的好处</p>
-<p>这里还得说一句，本篇使用的是3.0+的GreenDao，3.0后的库和3.0之前的有很大的不用，3.0后的greendao库不需要添加外部依赖，用java代码生成辅助类<br>直接用注解的方式生成辅助类，并在app的build 中能指定生成的文件的目录<br>接下来正式接入<br>首先在project的build中加入classpath<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">dependencies &#123;</span><br><span class="line">      classpath &apos;com.android.tools.build:gradle:2.2.2&apos;</span><br><span class="line">      //add</span><br><span class="line">      classpath &apos;org.greenrobot:greendao-gradle-plugin:3.2.1&apos;</span><br><span class="line">      // NOTE: Do not place your application dependencies here; they belong</span><br><span class="line">      // in the individual module build.gradle files</span><br><span class="line">  &#125;</span><br></pre></td></tr></table></figure></p>
-<p>接下来配置app的build<br>顶部的<br>apply下面加入这一句<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">apply plugin: &apos;org.greenrobot.greendao&apos;</span><br></pre></td></tr></table></figure></p>
-<p>dependencies下加入<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">compile &apos;org.greenrobot:greendao:3.2.0&apos;</span><br><span class="line">  compile &apos;org.greenrobot:greendao-generator:3.0.0&apos;</span><br></pre></td></tr></table></figure></p>
-<p>最外层配置<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">//指定生成的文件目录</span><br><span class="line">greendao &#123;</span><br><span class="line">    schemaVersion 1</span><br><span class="line">    daoPackage &apos;com.anye.greendao.gen&apos;</span><br><span class="line">    targetGenDir &apos;src/main/java&apos;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<p>全部代码如下<br>新增加的我会加入//add<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br></pre></td><td class="code"><pre><span class="line">apply plugin: &apos;com.android.application&apos;</span><br><span class="line">//add</span><br><span class="line">apply plugin: &apos;org.greenrobot.greendao&apos;</span><br><span class="line">android &#123;</span><br><span class="line">    compileSdkVersion 25</span><br><span class="line">    buildToolsVersion &quot;25.0.1&quot;</span><br><span class="line">    defaultConfig &#123;</span><br><span class="line">        applicationId &quot;com.anlaiye.swt.greendaodemo&quot;</span><br><span class="line">        minSdkVersion 14</span><br><span class="line">        targetSdkVersion 24</span><br><span class="line">        versionCode 1</span><br><span class="line">        versionName &quot;1.0&quot;</span><br><span class="line">        testInstrumentationRunner &quot;android.support.test.runner.AndroidJUnitRunner&quot;</span><br><span class="line">    &#125;</span><br><span class="line">    buildTypes &#123;</span><br><span class="line">        release &#123;</span><br><span class="line">            minifyEnabled false</span><br><span class="line">            proguardFiles getDefaultProguardFile(&apos;proguard-android.txt&apos;), &apos;proguard-rules.pro&apos;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br><span class="line">//add</span><br><span class="line">greendao &#123;</span><br><span class="line">    schemaVersion 1</span><br><span class="line">    daoPackage &apos;com.anye.greendao.gen&apos;</span><br><span class="line">    targetGenDir &apos;src/main/java&apos;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line">dependencies &#123;</span><br><span class="line">    compile fileTree(include: [&apos;*.jar&apos;], dir: &apos;libs&apos;)</span><br><span class="line">    androidTestCompile(&apos;com.android.support.test.espresso:espresso-core:2.2.2&apos;, &#123;</span><br><span class="line">        exclude group: &apos;com.android.support&apos;, module: &apos;support-annotations&apos;</span><br><span class="line">    &#125;)</span><br><span class="line">    compile &apos;com.android.support:appcompat-v7:25.0.1&apos;</span><br><span class="line">    testCompile &apos;junit:junit:4.12&apos;</span><br><span class="line">    //add</span><br><span class="line">    compile &apos;org.greenrobot:greendao:3.2.0&apos;</span><br><span class="line">    compile &apos;org.greenrobot:greendao-generator:3.0.0&apos;</span><br><span class="line">    compile &apos;com.android.support:recyclerview-v7:25.0.0&apos;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<p>到这里基本的配置就完成了<br>接下来创建一个user类<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">@Entity</span><br><span class="line">public class User &#123;</span><br><span class="line">//表示id会自增长</span><br><span class="line">    @Id(autoincrement = true)</span><br><span class="line">    private Long id;</span><br><span class="line">    private String name;</span><br><span class="line">    private int age;</span><br><span class="line">    private String sex;</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure></p>
-<p>因为3.0后都是使用注解的方式，所以如果大家对别的注解像深入了解的话可以去官网看下<br>创建好后点击build-make<br>会在我们指定的目录下生成特定的文件<br><img src="http://img.blog.csdn.net/20170315141446085?watermark/2/text/aHR0cDovL2Jsb2cuY3Nkbi5uZXQvcXFfMTU1Mjc3MDk=/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70/gravity/SouthEast" alt="这里写图片描述"><br>同时在User类中会自动生成get set方法<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br></pre></td><td class="code"><pre><span class="line">package com.anlaiye.swt.greendaodemo;</span><br><span class="line"></span><br><span class="line">import org.greenrobot.greendao.annotation.Entity;</span><br><span class="line">import org.greenrobot.greendao.annotation.Id;</span><br><span class="line">import org.greenrobot.greendao.annotation.Generated;</span><br><span class="line"></span><br><span class="line">/**</span><br><span class="line"> * 介绍：这里写介绍</span><br><span class="line"> * 作者：sweet</span><br><span class="line"> * 邮箱：sunwentao@imcoming.cn</span><br><span class="line"> * 时间: 2017/3/9</span><br><span class="line"> */</span><br><span class="line">@Entity</span><br><span class="line">public class User &#123;</span><br><span class="line">    @Id(autoincrement = true)</span><br><span class="line">    private Long id;</span><br><span class="line">    private String name;</span><br><span class="line">    private int age;</span><br><span class="line">    private String sex;</span><br><span class="line">    @Generated(hash = 689493095)</span><br><span class="line">    public User(Long id, String name, int age, String sex) &#123;</span><br><span class="line">        this.id = id;</span><br><span class="line">        this.name = name;</span><br><span class="line">        this.age = age;</span><br><span class="line">        this.sex = sex;</span><br><span class="line">    &#125;</span><br><span class="line">    @Generated(hash = 586692638)</span><br><span class="line">    public User() &#123;</span><br><span class="line">    &#125;</span><br><span class="line">    public Long getId() &#123;</span><br><span class="line">        return this.id;</span><br><span class="line">    &#125;</span><br><span class="line">    public void setId(Long id) &#123;</span><br><span class="line">        this.id = id;</span><br><span class="line">    &#125;</span><br><span class="line">    public String getName() &#123;</span><br><span class="line">        return this.name;</span><br><span class="line">    &#125;</span><br><span class="line">    public void setName(String name) &#123;</span><br><span class="line">        this.name = name;</span><br><span class="line">    &#125;</span><br><span class="line">    public int getAge() &#123;</span><br><span class="line">        return this.age;</span><br><span class="line">    &#125;</span><br><span class="line">    public void setAge(int age) &#123;</span><br><span class="line">        this.age = age;</span><br><span class="line">    &#125;</span><br><span class="line">    public String getSex() &#123;</span><br><span class="line">        return this.sex;</span><br><span class="line">    &#125;</span><br><span class="line">    public void setSex(String sex) &#123;</span><br><span class="line">        this.sex = sex;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">  </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<p>接下来进行测试<br>在前面有个dao对象，现在来看下他是怎么生成的<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"> private DaoMaster.DevOpenHelper mHelper;</span><br><span class="line">  private SQLiteDatabase db;</span><br><span class="line">  private DaoMaster mDaoMaster;</span><br><span class="line">  private DaoSession mDaoSession;</span><br><span class="line">     private UserDao dao;</span><br><span class="line">private void openDb() &#123;</span><br><span class="line">        //创建swt_db的数据库</span><br><span class="line">      mHelper = new DaoMaster.DevOpenHelper(this, &quot;swt-db&quot;, null);</span><br><span class="line">      //拿到可读可写的对象</span><br><span class="line">      db = mHelper.getWritableDatabase();</span><br><span class="line">      //拿到DaoMaster对象</span><br><span class="line">      mDaoMaster = new DaoMaster(db);</span><br><span class="line">      //拿到daosession对象</span><br><span class="line">      mDaoSession = mDaoMaster.newSession();</span><br><span class="line">      //创建了user表所以会生成usedao的实例</span><br><span class="line">      dao = mDaoSession.getUserDao();</span><br><span class="line">  &#125;</span><br></pre></td></tr></table></figure></p>
-<p>上面的操作是固定的，也就是说我们可以把打开数据库的这一系列操作，封装起来，比如放到aplication中<br>或者使用一个util类封装，<br>好了，拿到了user表的dao对象，接下来就可以正式对user表进行操作了<br>我写了一个简陋的ui来形象的展示<br>首先看下我写的DEMO界面效果<br><img src="http://img.blog.csdn.net/20170315142216901?watermark/2/text/aHR0cDovL2Jsb2cuY3Nkbi5uZXQvcXFfMTU1Mjc3MDk=/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70/gravity/SouthEast" alt="这里写图片描述"></p>
-<p>我定义了3个edittext拿到输入的值作为user表的属性<br>首先是插入操作<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">//这里不用设置id，id设置了自增加，会自动生成</span><br><span class="line"> User insertUser = new User(null, getEtName(), getAge(), getSex());</span><br><span class="line">                    dao.insert(insertUser);</span><br></pre></td></tr></table></figure></p>
-<p>删除操作<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">//根据id删除内容</span><br><span class="line">  dao.deleteByKey(getId());</span><br></pre></td></tr></table></figure></p>
-<p>更新操作<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">//根据id更新指定的数据</span><br><span class="line">   User UpdateUser = new User(getid(), getEtName(), getAge(), getSex());</span><br><span class="line">                dao.update(UpdateUser);</span><br></pre></td></tr></table></figure></p>
-<p> 查询操作<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">//查询出所有的数据</span><br><span class="line">  dao.loadAll();</span><br></pre></td></tr></table></figure></p>
-<p>增删改查基本上都是一俩句话就完成了<br>真的是灰常简单<br>接下来看下正常的效果<br><img src="http://img.blog.csdn.net/20170315142925717?watermark/2/text/aHR0cDovL2Jsb2cuY3Nkbi5uZXQvcXFfMTU1Mjc3MDk=/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70/gravity/SouthEast" alt="这里写图片描述"><br>这里只是简单的使用recyclerview实现做个演示<br>代码下载地址<br><a href="https://github.com/swtandyz/GreenDaoDemo" target="_blank" rel="noopener">https://github.com/swtandyz/GreenDaoDemo</a><br>随手start thanks</p>
-
-      
-
-      
-    </div>
-    <div class="article-info article-info-index">
-      
-      
-      
-
-      
-        <p class="article-more-link">
-          <a class="article-more-a" href="/2018/03/12/GreenDao3.0+库，轻松搞定安卓数据库操作/">展开全文 >></a>
-        </p>
-      
-
-      
-      <div class="clearfix"></div>
-    </div>
-  </div>
-</article>
-
-<aside class="wrap-side-operation">
-    <div class="mod-side-operation">
-        
-        <div class="jump-container" id="js-jump-container" style="display:none;">
-            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
-                <i class="icon-font icon-back"></i>
-            </a>
-            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
-                <i class="icon-font icon-plane jump-plane"></i>
-            </div>
-        </div>
-        
-        
-    </div>
-</aside>
-
-
-
-
-  
-    <article id="post-andorid面试题和笔记" class="article article-type-post  article-index" itemscope itemprop="blogPost">
-  <div class="article-inner">
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <p>##事件分发机制<br>首先事件指的是触摸事件，首先是viewgroup的事件分发，viewgroup里面有子view，ViewGroup的相关事件有三个：onInterceptTouchEvent、dispatchTouchEvent、onTouchEvent。View的相关事件只有两个：dispatchTouchEvent、onTouchEvent。</p>
-<p>简单的来说就是viewgroup遍历自己的子view，如果子view中有viewgroup，就继续遍历这个viewgroup的子view，都是调用的dispatchTouchEvent来分发事件，dispatchTouchEvent会返回一个布尔值类型的参数，事件会一直分发，一直在某个view调用dispatchTouchEvent返回true,表示事件分发到此结束，返回true的这个view就是需要接受这个事件的view，</p>
-<p>ViewGroup的dispatchTouchEvent是真正在执行“分发”工作，而View的dispatchTouchEvent方法，并不执行分发工作，或者说它分发的对象就是自己，决定是否把touch事件交给自己处理，而处理的方法，便是onTouchEvent事件，这里说到了view的onTouchEvent事件是这个时候开始执行，那么viewgroup的onTouchEvent什么时候执行呢？，当所有的子view调用dispatchTouchEvent都是返回false的时候，这个时候viewgroup的onTouchEvent就会执行</p>
-<p>事实上，一次完整的Touch事件，应该是由一个Down、一个Up和若干个Move组成的<br>但是dispatchTouchEvent只是分发了Down事件，只有返回true的时候，证明这个view需要 这个事件，然后在继续分发Up和Move事件给它，</p>
-<p>ViewGroup还有个onInterceptTouchEvent，看名字便知道这是个拦截事件。这个拦截事件需要分两种情况来说明：</p>
-<p>1.假如我们在某个ViewGroup的onInterceptTouchEvent中，将Action为Down的Touch事件返回true，那便表示将该ViewGroup的所有下发操作拦截掉，这种情况下，mTarget会一直为null，因为mTarget是在Down事件中赋值的。由于mTarge为null，该ViewGroup的onTouchEvent事件被执行。这种情况下可以把这个ViewGroup直接当成View来对待。</p>
-<p>2.假如我们在某个ViewGroup的onInterceptTouchEvent中，将Acion为Down的Touch事件都返回false，其他的都返回True，这种情况下，Down事件能正常分发，若子View都返回false，那mTarget还是为空，无影响。若某个子View返回了true，mTarget被赋值了，在Action_Move和Aciton_UP分发到该ViewGroup时，便会给mTarget分发一个Action_Delete的MotionEvent，同时清空mTarget的值，使得接下去的Action_Move(如果上一个操作不是UP)将由ViewGroup的onTouchEvent处理。</p>
-<p>Ontouch的优先级高于onclick,onclick的事件在ontouchevent中，只有在ontouch返回false的时候才会继续执行ontouchevent</p>
-<p>##view的渲染机制<br>基础知识<br>CPU: 中央处理器,它集成了运算,缓冲,控制等单元,包括绘图功能.CPU将对象处理为多维图形,纹理(Bitmaps、Drawables等都是一起打包到统一的纹理).</p>
-<p>GPU:一个类似于CPU的专门用来处理Graphics的处理器, 作用用来帮助加快格栅化操作,当然,也有相应的缓存数据(例如缓存已经光栅化过的bitmap等)机制。</p>
-<p>OpenGL ES是手持嵌入式设备的3DAPI,跨平台的、功能完善的2D和3D图形应用程序接口API,有一套固定渲染管线流程. 附相关OpenGL渲染流程资料</p>
-<p>DisplayList 在Android把XML布局文件转换成GPU能够识别并绘制的对象。这个操作是在DisplayList的帮助下完成的。DisplayList持有所有将要交给GPU绘制到屏幕上的数据信息。</p>
-<p>1,Android系统每隔16ms重新绘制一次activity，也就是说你的app必须在16ms内完成屏幕刷新的所有逻辑操作，这样才能达到60帧/s。而用户一般所看到的卡顿是由于Android的渲染性能造成的。 </p>
-<p>2,将复杂的UI转换成用户看得懂的图像并绘制到屏幕上是由格栅化操作完成的<br>格栅化将字符串，按钮，路径或者形状的一些高级对象拆分到不同的像素上在屏幕上进行显示，这是一个非常耗时的操作而手机里有一块硬件就是为了加速完成这个操作就是GPU（图像处理单元）<br>渲染过程</p>
-<p>CPU在图像绘制之前向GPU输入指令这一过程通过OpenGL-ES 完成<br>也就是说在屏幕绘制UI对象的时候都需要在CPU中转化成多边形再传递GPU进行格栅化操作<br>cpu将对象转换为多边形耗时 同样上传到GPU也耗时所以我们要减少对象转换次数以及上传数据的次数,幸运的是OpenGL-ES API允许数据上传到GPU进行数据保存，当下一次绘制按钮的时候只要在GPU的存储器里引用它 所以渲染性能的优化就是尽快的上传数据到GPU尽可能长的在不修改数据的条件下保存数据</p>
-<p>##动画原理 </p>
-<p>首先看下view的源码<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">public void startAnimation(Animation animation) &#123;</span><br><span class="line">      animation.setStartTime(Animation.START_ON_FIRST_FRAME);</span><br><span class="line">      setAnimation(animation);</span><br><span class="line">      invalidateParentCaches();</span><br><span class="line">      invalidate(true);</span><br><span class="line">  &#125;</span><br></pre></td></tr></table></figure></p>
-<p>开始一个动画，在setAnimation之后，调用invalidate刷新自己的界面</p>
-<p>Android 动画就是通过 ParentView 来不断调整 ChildView 的画布坐标系来实现的，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">dispatchDraw()   </span><br><span class="line">&#123;   </span><br><span class="line">    ....   </span><br><span class="line">    Animation a = ChildView.getAnimation()   </span><br><span class="line">    Transformation tm = a.getTransformation();   </span><br><span class="line">    Use tm to set ChildView&apos;s Canvas;   </span><br><span class="line">    Invalidate();   </span><br><span class="line">    ....   </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<p>ParentView 在分发绘制的时候，获取childview的动画属性值，不断的进行Invalidate,直到childview绘制完成</p>
-<p>##ANR原理<br>android设计了一种机制，认为一些阻挡它生命周期的返回，不能无限制下去。当满足超时条件，会弹框提醒用户中止或者等待操作</p>
-<p>系统都设计了哪些ANR：<br>1:KeyDispatchTimeout(5 seconds) –主要类型<br>按键或触摸事件在特定时间内无响应<br>2:BroadcastTimeout(10 seconds)<br>BroadcastReceiver 在特定时间内无法处理完成<br>3:ServiceTimeout(20 seconds)<br>Service 在特定的时间内无法处理完成<br>除此之外,还有 ContentProvider,只是一般很少见。</p>
-<p>发生场景<br>耗时的工作（比如数据库操作，I/O，连接网络或者别的有<br>可能阻碍 UI 线程的操作）把它放入单独的线程处理.<br>比如打开wifi（因为跨进程操作，有可能wifiserver那边处理超时）<br>读写文件（操作是个iowait负载较大的行为，很容易anr）<br>查询语句（在数据库内容暴增之后，出现严重的性能问题，产生anr）<br>SharedPreferences 的commit操作，本身是个等待操作，在我们activity退出时，有时保存当前状态，方便恢复，会使用commit，如果我们也有一个此时在操作，因为这个操作是有个锁，引起anr<br>list的排序。（算法的质量，以及当列表数目激增后，是否能快速算完，是个耗时操作，会产生anr）<br>bitmap的运算，（旋转，特效处理等）<br>ThreadPoolExecutor 线程池，当我们从这里获取一个线程时候，如果此时所有线程都被使用，就只能迫使等待，此时会出现anr</p>
-<p>##oom是否可以try catch<br>oom属于错误不属于异常 不能try catch(个人观点)</p>
-<p>##Android有多个资源文件夹，应用在不同分辨率下是如何查找对应文件夹下的资源的，描述整个过程<br>| dpi范围|密度 |<br>| ————- |:————-|<br>| 0dpi~120dpi | ldpi|<br>| 120dpi~160dpi | mdpi|<br>| 160dpi~240dpi | hdpi |<br>| 240dpi~320dpi | xhdpi |<br>| 320dpi~480dpi | xxhdpi |<br>| 480dpi~640dpi | xxxhdpi |</p>
-<p>dpi= context.getResources().getDisplayMetrics().densityDpi<br>根据手机不同的dpi安卓会对应加载不同的资源文件</p>
-<p>##java四种引用</p>
-<p>###强引用<br>平时使用最多的<br>比如下面<br>Object object =new Object();<br>String str =”hello”;<br> 强引用有引用变量指向时永远不会被垃圾回收，JVM宁愿抛出OutOfMemory错误也不会回收这种对象。</p>
-<p>###软引用<br>如果一个对象具有软引用，内存空间足够，垃圾回收器就不会回收它；<br>如果内存空间不足了，就会回收这些对象的内存。只要垃圾回收器没有回收它，该对象就可以被程序使用。<br>软引用可用来实现内存敏感的高速缓存,比如网页缓存、图片缓存等。使用软引用能防止内存泄露，增强程序的健壮性。<br>SoftReference的特点是它的一个实例保存对一个Java对象的软引用， 该软引用的存在不妨碍垃圾收集线程对该Java对象的回收。<br>也就是说，一旦SoftReference保存了对一个Java对象的软引用后，在垃圾线程对 这个Java对象回收前，SoftReference类所提供的get()方法返回Java对象的强引用。<br>另外，一旦垃圾线程回收该Java对象之 后，get()方法将返回null。</p>
-<p>###弱引用<br>　弱引用也是用来描述非必需对象的，当JVM进行垃圾回收时，无论内存是否充足，都会回收被弱引用关联的对象。在java中，用java.lang.ref.WeakReference类来表示。<br>　<br>弱引用关联的对象只有弱引用与之关联的时候会被系统回收，如果存在强引用同时与之关联，则进行垃圾回收时也不会回收该对象（软引用也是如此）。<br>比如<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">People people=new People(&quot;zhouqian&quot;,20);  </span><br><span class="line">       WeakReference&lt;People&gt;reference=new WeakReference&lt;People&gt;(people);</span><br></pre></td></tr></table></figure></p>
-<p>WeakReference弱引用于强引用people关联，这个时候不会被系统回收</p>
-<p>###虚引用<br>虚引用和前面的软引用、弱引用不同，它并不影响对象的生命周期。在java中用java.lang.ref.PhantomReference类表示。如果一个对象与虚引用关联，则跟没有引用与之关联一样，在任何时候都可能被垃圾回收器回收。<br>　　要注意的是，虚引用必须和引用队列关联使用，当垃圾回收器准备回收一个对象时，如果发现它还有虚引用，就会把这个虚引用加入到与之 关联的引用队列中。程序可以通过判断引用队列中是否已经加入了虚引用，来了解被引用的对象是否将要被垃圾回收。如果程序发现某个虚引用已经被加入到引用队列，那么就可以在所引用的对象的内存被回收之前采取必要的行动。</p>
-<p>##如何保证线程安全<br>基本上所有的并发模式在解决线程安全问题上，都采用“序列化访问临界资源”的方案，即在同一时刻，只能有一个线程访问临界资源，也称同步互斥访问。<br>通常来说，是在访问临界资源的代码前面加上一个锁，当访问完临界资源后释放锁，让其他线程继续访问。<br>在Java中，提供了两种方式来实现同步互斥访问：synchronized和Lock。</p>
-<p>非线程安全是指多线程操作同一个对象可能会出现问题。而线程安全则是多线程操作同一个对象不会有问题。</p>
-<p>线程安全必须要使用很多synchronized关键字来同步控制，所以必然会导致性能的降低。</p>
-<p>所以在使用的时候，如果是多个线程操作同一个对象，那么使用线程安全的Vector；否则，就使用效率更高的ArrayList。</p>
-
-      
-
-      
-    </div>
-    <div class="article-info article-info-index">
-      
-      
-      
-
-      
-        <p class="article-more-link">
-          <a class="article-more-a" href="/2018/03/12/andorid面试题和笔记/">展开全文 >></a>
-        </p>
-      
-
-      
-      <div class="clearfix"></div>
-    </div>
-  </div>
-</article>
-
-<aside class="wrap-side-operation">
-    <div class="mod-side-operation">
-        
-        <div class="jump-container" id="js-jump-container" style="display:none;">
-            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
-                <i class="icon-font icon-back"></i>
-            </a>
-            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
-                <i class="icon-font icon-plane jump-plane"></i>
-            </div>
-        </div>
-        
-        
-    </div>
-</aside>
-
-
-
-
-  
-    <article id="post-android秒启动unity，和给unity添加过渡图片" class="article article-type-post  article-index" itemscope itemprop="blogPost">
-  <div class="article-inner">
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <p>1，本篇不讲解unity如何集成，网上很多，主要讲解下面几个点<br>     一，最容易出现的bug<br>     二，快速启动unity<br>     三，帮unity添加过渡图和可能会遇到的问题</p>
-<p>一，android 在退出unity的时候，unity会执行结束进程，同时也会结束掉你的APP的进程<br>解决办法是<br>重写unityplay，重写kill方法。搞定<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">public class MyUnityPlay extends UnityPlayer &#123;</span><br><span class="line">    public MyUnityPlay(ContextWrapper contextWrapper) &#123;</span><br><span class="line">        super(contextWrapper);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    @Override</span><br><span class="line">    protected void kill() &#123;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<p>二，快速启动unity<br>首先看下unity导出后的默认代码<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br></pre></td><td class="code"><pre><span class="line">package com.sunwentao.liuliuqiu;</span><br><span class="line"></span><br><span class="line">import com.unity3d.player.*;</span><br><span class="line">import android.app.Activity;</span><br><span class="line">import android.content.Intent;</span><br><span class="line">import android.content.res.Configuration;</span><br><span class="line">import android.graphics.PixelFormat;</span><br><span class="line">import android.os.Bundle;</span><br><span class="line">import android.view.KeyEvent;</span><br><span class="line">import android.view.MotionEvent;</span><br><span class="line">import android.view.View;</span><br><span class="line">import android.view.Window;</span><br><span class="line">import android.view.WindowManager;</span><br><span class="line"></span><br><span class="line">public class UnityPlayerActivity extends Activity</span><br><span class="line">&#123;</span><br><span class="line">    protected UnityPlayer mUnityPlayer; // don&apos;t change the name of this variable; referenced from native code</span><br><span class="line"></span><br><span class="line">    // Setup activity layout</span><br><span class="line">    @Override protected void onCreate (Bundle savedInstanceState)</span><br><span class="line">    &#123;</span><br><span class="line">        requestWindowFeature(Window.FEATURE_NO_TITLE);</span><br><span class="line">        super.onCreate(savedInstanceState);</span><br><span class="line"></span><br><span class="line">        getWindow().setFormat(PixelFormat.RGBX_8888); // &lt;--- This makes xperia play happy</span><br><span class="line"></span><br><span class="line">        mUnityPlayer = new UnityPlayer(this);</span><br><span class="line">        setContentView(mUnityPlayer);</span><br><span class="line">        mUnityPlayer.requestFocus();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    @Override protected void onNewIntent(Intent intent)</span><br><span class="line">    &#123;</span><br><span class="line">        // To support deep linking, we need to make sure that the client can get access to</span><br><span class="line">        // the last sent intent. The clients access this through a JNI api that allows them</span><br><span class="line">        // to get the intent set on launch. To update that after launch we have to manually</span><br><span class="line">        // replace the intent with the one caught here.</span><br><span class="line">        setIntent(intent);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    // Quit Unity</span><br><span class="line">    @Override protected void onDestroy ()</span><br><span class="line">    &#123;</span><br><span class="line">        mUnityPlayer.quit();</span><br><span class="line">        super.onDestroy();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    // Pause Unity</span><br><span class="line">    @Override protected void onPause()</span><br><span class="line">    &#123;</span><br><span class="line">        super.onPause();</span><br><span class="line">        mUnityPlayer.pause();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    // Resume Unity</span><br><span class="line">    @Override protected void onResume()</span><br><span class="line">    &#123;</span><br><span class="line">        super.onResume();</span><br><span class="line">        mUnityPlayer.resume();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    // Low Memory Unity</span><br><span class="line">    @Override public void onLowMemory()</span><br><span class="line">    &#123;</span><br><span class="line">        super.onLowMemory();</span><br><span class="line">        mUnityPlayer.lowMemory();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    // Trim Memory Unity</span><br><span class="line">    @Override public void onTrimMemory(int level)</span><br><span class="line">    &#123;</span><br><span class="line">        super.onTrimMemory(level);</span><br><span class="line">        if (level == TRIM_MEMORY_RUNNING_CRITICAL)</span><br><span class="line">        &#123;</span><br><span class="line">            mUnityPlayer.lowMemory();</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    // This ensures the layout will be correct.</span><br><span class="line">    @Override public void onConfigurationChanged(Configuration newConfig)</span><br><span class="line">    &#123;</span><br><span class="line">        super.onConfigurationChanged(newConfig);</span><br><span class="line">        mUnityPlayer.configurationChanged(newConfig);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    // Notify Unity of the focus change.</span><br><span class="line">    @Override public void onWindowFocusChanged(boolean hasFocus)</span><br><span class="line">    &#123;</span><br><span class="line">        super.onWindowFocusChanged(hasFocus);</span><br><span class="line">        mUnityPlayer.windowFocusChanged(hasFocus);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    // For some reason the multiple keyevent type is not supported by the ndk.</span><br><span class="line">    // Force event injection by overriding dispatchKeyEvent().</span><br><span class="line">    @Override public boolean dispatchKeyEvent(KeyEvent event)</span><br><span class="line">    &#123;</span><br><span class="line">        if (event.getAction() == KeyEvent.ACTION_MULTIPLE)</span><br><span class="line">            return mUnityPlayer.injectEvent(event);</span><br><span class="line">        return super.dispatchKeyEvent(event);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    // Pass any events not handled by (unfocused) views straight to UnityPlayer</span><br><span class="line">    @Override public boolean onKeyUp(int keyCode, KeyEvent event)     &#123; return mUnityPlayer.injectEvent(event); &#125;</span><br><span class="line">    @Override public boolean onKeyDown(int keyCode, KeyEvent event)   &#123; return mUnityPlayer.injectEvent(event); &#125;</span><br><span class="line">    @Override public boolean onTouchEvent(MotionEvent event)          &#123; return mUnityPlayer.injectEvent(event); &#125;</span><br><span class="line">    /*API12*/ public boolean onGenericMotionEvent(MotionEvent event)  &#123; return mUnityPlayer.injectEvent(event); &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<p>去掉ondestory方法，当用户点击了unity的退出按钮的时候，会回调android的一个方法，比如是exit<br>,<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">public void exit()&#123;</span><br><span class="line">  mUnityPlayer.pause();</span><br><span class="line">      moveTaskToBack(true);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<p>首先暂停unity,然后将当年的界面移到后台，不关闭unityplayactivity这个界面，<br>有的人肯定会问 这样不会耗资源吗，只要你调用了mUnityPlayer.pause()<br>那么就不怎么会耗你的资源，从你的手机发烫的程度就可以知道，如果你开着unity10-20分钟你肯定能感觉你的手机很烫了，但是你在退出的时候调用暂停这个方法，手机就不会发烫，说明unity消耗的资源不多，<br>当然unity那边的场景在每次你点击退出的时候都应该清掉</p>
-<p>从上面的代码可以看到我们并没有关闭unityplay这个界面，所以我们再次打开是很快的，基本上是秒开，<br>所以和unity的交互不能写在oncreate里面，应该写在unresume里面，这样每次你进来都能重新调用unity，并加载出界面比如下面这样<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line">    // Resume Unity</span><br><span class="line">    @Override</span><br><span class="line">    protected void onResume() &#123;</span><br><span class="line">        super.onResume();</span><br><span class="line"></span><br><span class="line">        new Handler().post(new Runnable() &#123;</span><br><span class="line">            @Override</span><br><span class="line">            public void run() &#123;</span><br><span class="line"></span><br><span class="line">//                if (!isFirst)&#123;</span><br><span class="line">                mUnityPlayer.resume();</span><br><span class="line">//                &#125;</span><br><span class="line">                UnityPlayer.currentActivity.runOnUiThread(new Runnable() &#123;</span><br><span class="line">                    @Override</span><br><span class="line">                    public void run() &#123;</span><br><span class="line">                        if (CURREN_MODE == xxxx) &#123;</span><br><span class="line">                            UnityPlayer.UnitySendMessage(&quot;xxxxx&quot;, &quot;xxxx&quot;, &quot;&quot;);</span><br><span class="line">                        &#125; else if (CURREN_MODE == xxxx) &#123;</span><br><span class="line">                            UnityPlayer.UnitySendMessage(&quot;xxxxx&quot;, &quot;xxxxx&quot;, xxx);</span><br><span class="line">                        &#125; else if (CURREN_MODE == xxxxx) &#123;</span><br><span class="line">                            UnityPlayer.UnitySendMessage(&quot;xxxxx&quot;, &quot;xxxxx&quot;, xxx);</span><br><span class="line">                        &#125;</span><br><span class="line">                    &#125;</span><br><span class="line">                &#125;);</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">            &#125;</span><br><span class="line">        &#125;);</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure></p>
-<p>调用 mUnityPlayer.resume()<br>让unity重新开始工作，接着发送交互信息，这样就实现了，你只需要加载一次unity界面，下次你在进来是非常快的(做过unity集成的都知道unity在安卓手机上启动是有多慢);</p>
-<p>三，添加过渡页<br>首先看下代码<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line">@Override</span><br><span class="line">protected void onCreate(Bundle savedInstanceState) &#123;</span><br><span class="line">    requestWindowFeature(Window.FEATURE_NO_TITLE);</span><br><span class="line">    super.onCreate(savedInstanceState);</span><br><span class="line">    getWindow().setFormat(PixelFormat.RGBX_8888); // &lt;--- This makes xperia play happy</span><br><span class="line">    mUnityPlayer = new MyUnityPlay(this);</span><br><span class="line">    SpUtils.setConext(this);</span><br><span class="line">    setContentView(mUnityPlayer);</span><br><span class="line">    mUnityPlayer.requestFocus();</span><br><span class="line">        try &#123;</span><br><span class="line">            bgView = new ImageView(UnityPlayer.currentActivity);</span><br><span class="line">            bgView.setImageResource(R.drawable.unityloading2x);</span><br><span class="line">            bgView.setScaleType(ImageView.ScaleType.FIT_XY);</span><br><span class="line">            Resources r = mUnityPlayer.currentActivity.getResources();</span><br><span class="line">            mUnityPlayer.addView(bgView, r.getDisplayMetrics().widthPixels, r.getDisplayMetrics().heightPixels);</span><br><span class="line">        &#125; catch (Exception e) &#123;</span><br><span class="line">            e.printStackTrace();</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<p>代码很简单，这样写不会出现黑屏的问题，我以前用的dialog显示一张图片，很大的概率出现黑屏，可能是dialog挡住了unityplay的绘制。<br>上面这样写是没问题的，<br>然后在unity开始执行第一帧的时候，调用你的一个方法，你在把这个image移除掉<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">try &#123;</span><br><span class="line">             if (bgView == null)</span><br><span class="line">                 return;</span><br><span class="line">             UnityPlayer.currentActivity.runOnUiThread(new Runnable() &#123;</span><br><span class="line">                 public void run() &#123;</span><br><span class="line">                     mUnityPlayer.removeView(bgView);</span><br><span class="line">                     bgView = null;</span><br><span class="line">                 &#125;</span><br><span class="line"></span><br><span class="line">             &#125;);</span><br><span class="line"></span><br><span class="line">         &#125; catch (Exception e) &#123;</span><br><span class="line">             e.printStackTrace();</span><br><span class="line">         &#125;</span><br></pre></td></tr></table></figure></p>
-<p>这个方法你和unity那边沟通确定好就行了，方法名都是随便定义的</p>
-<p>就这么多，有问题欢迎讨论</p>
-
-      
-
-      
-    </div>
-    <div class="article-info article-info-index">
-      
-      
-      
-
-      
-        <p class="article-more-link">
-          <a class="article-more-a" href="/2018/03/12/android秒启动unity，和给unity添加过渡图片/">展开全文 >></a>
-        </p>
-      
-
-      
-      <div class="clearfix"></div>
-    </div>
-  </div>
-</article>
-
-<aside class="wrap-side-operation">
-    <div class="mod-side-operation">
-        
-        <div class="jump-container" id="js-jump-container" style="display:none;">
-            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
-                <i class="icon-font icon-back"></i>
-            </a>
-            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
-                <i class="icon-font icon-plane jump-plane"></i>
-            </div>
-        </div>
-        
-        
-    </div>
-</aside>
-
-
-
-
-  
-    <article id="post-hashmap源码解析" class="article article-type-post  article-index" itemscope itemprop="blogPost">
-  <div class="article-inner">
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <p>##源码第一篇(hashmap)简单理解篇<br>本篇讲解hashmap的put 方法的原理和一些源码的解析</p>
-<p>下面先简单的介绍一下hashmap<br>(hashmap包位置为import java.util.HashMap)</p>
-<p>hashmap的数据结构是数组和链表的结合<br>为什么会是这个结构，后面会讲到</p>
-<p>hashmap是线程不安全的<br>非线程安全是指多线程操作同一个对象可能会出现问题<br>也就是说，我新建一个对象，用100个线程同时对这个对象进行操作，有可能是无法达到你预期的结果的。<br>至于原因大家应该都知道，是没有使用同步锁，所以才会导致这个问题的产生</p>
-<p>所以这里举一反三，带有同步锁的是线程安全的，比如ArrayList是非线程安全的，Vector是线程安全的；HashMap是非线程安全的，HashTable是线程安全的；StringBuilder是非线程安全的，StringBuffer是线程安全的，那么线程安全的会因为同步锁的关系，在性能上会有所降低</p>
-<p>进入正题<br>当我们调用put方法放入key的时候，hashmap会调用hashcode方法获取哈希码，通过哈希码进行计算快速找到某个存放位置，这个位置可以被称之为bucketIndex，这个index的计算公式为<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">static int indexFor(int h, int length) &#123;</span><br><span class="line">      // assert Integer.bitCount(length) == 1 : &quot;length must be a non-zero power of 2&quot;;</span><br><span class="line">      return h &amp; (length-1);</span><br><span class="line">  &#125;</span><br></pre></td></tr></table></figure></p>
-<p>这里涉及到取模等一系列复杂的运算，不是本篇的重点，大家对这个原理感兴趣的可以去研究下，为什么这里要使用lenth-1为什么会进行与计算等等</p>
-<p>现在暂时你只需要知道这里可以得到value的放置位置bucketIndex<br>拿到bucketIndex后，就会把值存放在这个位置。</p>
-<p>接下来简单介绍一下俩个方法<br>hashCode<br>equals</p>
-<p>hashcode用来获取哈希码，equals用来比较字符串中所包含的内容是否相同<br>如果hashCode不同，equals一定为false，如果hashCode相同，equals不一定为true</p>
-<p>那么这里就会出现一个问题，hashmap的键值对是唯一的，但是却又可能存在hashcode相同的情况，这个时候bucketIndex也会相同，那么hashmap是如何解决的呢？<br>当这个冲突发生的时候，也可以称这个冲突为”碰撞”，当碰撞发生后，hashmap会拿出bucketIndex上所有的值，通过hashCode和equals最终判断出新进来的key是否已经存在，如果存在就覆盖掉旧的值，如果不存在，就存入新的值。<br>上面我说hashmap会拿出bucketIndex上所有的值，从这句话可以看出，其实在某一个bucketIndex位置上，可能会存有多个value，（当然这个现象是比较少见的），所以hashmap在出现碰撞的时候，是通过一个链表来维护这个关系。</p>
-<p>这也是hashmap数据结构的构成原理</p>
-<p>那么知道大概的流程之后看一下相对于的源码会更加清晰，</p>
-<p>下面是hashmap put的源码<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line">public V put(K key, V value) &#123;</span><br><span class="line">  </span><br><span class="line">    if (table == EMPTY_TABLE) &#123;</span><br><span class="line">        inflateTable(threshold);</span><br><span class="line">    &#125;</span><br><span class="line">    if (key == null)</span><br><span class="line">        return putForNullKey(value);</span><br><span class="line">    int hash = sun.misc.Hashing.singleWordWangJenkinsHash(key);</span><br><span class="line">    int i = indexFor(hash, table.length);</span><br><span class="line">    for (HashMapEntry&lt;K,V&gt; e = table[i]; e != null; e = e.next) &#123;</span><br><span class="line">        Object k;</span><br><span class="line">        if (e.hash == hash &amp;&amp; ((k = e.key) == key || key.equals(k))) &#123;</span><br><span class="line">            V oldValue = e.value;</span><br><span class="line">            e.value = value;</span><br><span class="line">            e.recordAccess(this);</span><br><span class="line">            return oldValue;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    modCount++;</span><br><span class="line">    addEntry(hash, key, value, i);</span><br><span class="line">    return null;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<p>  第一行，如果table为空，那么就实例化一个新表inflateTable(threshold);<br>  hashmap中有一个table用来存取value值<br>在源码顶部的定义处可以看到HashMapEntry&lt;K,V&gt;[] table = (HashMapEntry&lt;K,V&gt;[]) EMPTY_TABLE;</p>
-<p>进入inflateTable这个方法看看<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">private void inflateTable(int toSize) &#123;</span><br><span class="line">     // Find a power of 2 &gt;= toSize</span><br><span class="line">     int capacity = roundUpToPowerOf2(toSize);</span><br><span class="line"></span><br><span class="line">     // Android-changed: Replace usage of Math.min() here because this method is</span><br><span class="line">     // called from the &lt;clinit&gt; of runtime, at which point the native libraries</span><br><span class="line">     // needed by Float.* might not be loaded.</span><br><span class="line">     float thresholdFloat = capacity * loadFactor;</span><br><span class="line">     if (thresholdFloat &gt; MAXIMUM_CAPACITY + 1) &#123;</span><br><span class="line">         thresholdFloat = MAXIMUM_CAPACITY + 1;</span><br><span class="line">     &#125;</span><br><span class="line"></span><br><span class="line">     threshold = (int) thresholdFloat;</span><br><span class="line">     table = new HashMapEntry[capacity];</span><br><span class="line"> &#125;</span><br></pre></td></tr></table></figure></p>
-<p>从最后俩句可以看出如果table 为空就会new出这个对象</p>
-<p>接下来继续往下看<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">if (key == null)</span><br><span class="line">return putForNullKey(value);</span><br></pre></td></tr></table></figure></p>
-<p>hashmap支持存取null值，这里对key为null的进行单独处理</p>
-<p>进入putForNullKey方法<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">private V putForNullKey(V value) &#123;</span><br><span class="line">     for (HashMapEntry&lt;K,V&gt; e = table[0]; e != null; e = e.next) &#123;</span><br><span class="line">         if (e.key == null) &#123;</span><br><span class="line">             V oldValue = e.value;</span><br><span class="line">             e.value = value;</span><br><span class="line">             e.recordAccess(this);</span><br><span class="line">             return oldValue;</span><br><span class="line">         &#125;</span><br><span class="line">     &#125;</span><br><span class="line">     modCount++;</span><br><span class="line">     addEntry(0, null, value, 0);</span><br><span class="line">     return null;</span><br><span class="line"> &#125;</span><br></pre></td></tr></table></figure></p>
-<p>对table表进行循环判断，判断是否有键为null的存在，如果存在，用新的value值，取代旧值。</p>
-<p>如果不存在就使用addEntry()进行添加;</p>
-<p>进入这个方法看下。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line">void addEntry(int hash, K key, V value, int bucketIndex) &#123;</span><br><span class="line">      if ((size &gt;= threshold) &amp;&amp; (null != table[bucketIndex])) &#123;</span><br><span class="line">          resize(2 * table.length);</span><br><span class="line">          hash = (null != key) ? sun.misc.Hashing.singleWordWangJenkinsHash(key) : 0;</span><br><span class="line">          bucketIndex = indexFor(hash, table.length);</span><br><span class="line">      &#125;</span><br><span class="line"></span><br><span class="line">      createEntry(hash, key, value, bucketIndex);</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  /**</span><br><span class="line">   * Like addEntry except that this version is used when creating entries</span><br><span class="line">   * as part of Map construction or &quot;pseudo-construction&quot; (cloning,</span><br><span class="line">   * deserialization).  This version needn&apos;t worry about resizing the table.</span><br><span class="line">   *</span><br><span class="line">   * Subclass overrides this to alter the behavior of HashMap(Map),</span><br><span class="line">   * clone, and readObject.</span><br><span class="line">   */</span><br><span class="line">  void createEntry(int hash, K key, V value, int bucketIndex) &#123;</span><br><span class="line">      HashMapEntry&lt;K,V&gt; e = table[bucketIndex];</span><br><span class="line">      table[bucketIndex] = new HashMapEntry&lt;&gt;(hash, key, value, e);</span><br><span class="line">      size++;</span><br><span class="line">  &#125;</span><br></pre></td></tr></table></figure></p>
-<p>简单的可以理解为找到bucketIndex值，创建Entry，看下createEntry方法里面<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">HashMapEntry&lt;K,V&gt; e = table[bucketIndex];</span><br><span class="line">     table[bucketIndex] = new HashMapEntry&lt;&gt;(hash, key, value, e);</span><br><span class="line">     size++;</span><br></pre></td></tr></table></figure></p>
-<p>很简单，是根据bucketIndex新建hashmapentry<br>同时总大小size++</p>
-<p>到这里put的整个流程差不多就说完了，如果能完全了解这个流程，你在去看get方法，我相信会很清晰了</p>
-
-      
-
-      
-    </div>
-    <div class="article-info article-info-index">
-      
-      
-      
-
-      
-        <p class="article-more-link">
-          <a class="article-more-a" href="/2018/03/12/hashmap源码解析/">展开全文 >></a>
-        </p>
-      
-
-      
-      <div class="clearfix"></div>
-    </div>
-  </div>
-</article>
-
-<aside class="wrap-side-operation">
-    <div class="mod-side-operation">
-        
-        <div class="jump-container" id="js-jump-container" style="display:none;">
-            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
-                <i class="icon-font icon-back"></i>
-            </a>
-            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
-                <i class="icon-font icon-plane jump-plane"></i>
-            </div>
-        </div>
-        
-        
-    </div>
-</aside>
-
-
-
-
-  
-    <article id="post-tniker热修复命令行接入" class="article article-type-post  article-index" itemscope itemprop="blogPost">
-  <div class="article-inner">
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <p>上篇写了gradle导入的方式，这篇讲解命令行接入的方式<br>首先还是导入包,同时修改下签名的配置<br>很简单 直接放出源码<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br></pre></td><td class="code"><pre><span class="line">apply plugin: &apos;com.android.application&apos;</span><br><span class="line"></span><br><span class="line">android &#123;</span><br><span class="line">    signingConfigs &#123;</span><br><span class="line">        release &#123;</span><br><span class="line">            keyAlias &apos;china&apos;</span><br><span class="line">            keyPassword &apos;123456&apos;</span><br><span class="line">            storeFile file(&apos;D:/work/release.jks&apos;)</span><br><span class="line">            storePassword &apos;123456&apos;</span><br><span class="line">        &#125;</span><br><span class="line">        debug &#123;</span><br><span class="line">            keyAlias &apos;china&apos;</span><br><span class="line">            keyPassword &apos;123456&apos;</span><br><span class="line">            storeFile file(&apos;D:/work/debug.jks&apos;)</span><br><span class="line">            storePassword &apos;123456&apos;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    compileSdkVersion 25</span><br><span class="line">    buildToolsVersion &quot;25.0.1&quot;</span><br><span class="line">    defaultConfig &#123;</span><br><span class="line">        applicationId &quot;com.anlaiye.swt.tinkertest&quot;</span><br><span class="line">        minSdkVersion 14</span><br><span class="line">        targetSdkVersion 25</span><br><span class="line">        versionCode 1</span><br><span class="line">        versionName &quot;1.0&quot;</span><br><span class="line">        testInstrumentationRunner &quot;android.support.test.runner.AndroidJUnitRunner&quot;</span><br><span class="line">    &#125;</span><br><span class="line">    buildTypes &#123;</span><br><span class="line">        release &#123;</span><br><span class="line">            debuggable true</span><br><span class="line">            minifyEnabled true</span><br><span class="line">            signingConfig signingConfigs.release</span><br><span class="line">            proguardFiles getDefaultProguardFile(&apos;proguard-android.txt&apos;), &apos;proguard-rules.pro&apos;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        debug &#123;</span><br><span class="line">            debuggable true</span><br><span class="line">            minifyEnabled true</span><br><span class="line">            signingConfig signingConfigs.debug</span><br><span class="line">            proguardFiles getDefaultProguardFile(&apos;proguard-android.txt&apos;), &apos;proguard-rules.pro&apos;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">dependencies &#123;</span><br><span class="line">    compile fileTree(include: [&apos;*.jar&apos;], dir: &apos;libs&apos;)</span><br><span class="line">    androidTestCompile(&apos;com.android.support.test.espresso:espresso-core:2.2.2&apos;, &#123;</span><br><span class="line">        exclude group: &apos;com.android.support&apos;, module: &apos;support-annotations&apos;</span><br><span class="line">    &#125;)</span><br><span class="line">    compile &apos;com.android.support:appcompat-v7:25.0.1&apos;</span><br><span class="line">    testCompile &apos;junit:junit:4.12&apos;</span><br><span class="line">    provided &apos;com.tencent.tinker:tinker-android-anno:1.7.7&apos;</span><br><span class="line">    //tinker的核心库</span><br><span class="line">    compile &apos;com.tencent.tinker:tinker-android-lib:1.7.7&apos;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<p>编写application类<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line">package com.anlaiye.swt.tinkertest;</span><br><span class="line"></span><br><span class="line">import android.app.Application;</span><br><span class="line">import android.content.Context;</span><br><span class="line">import android.content.Intent;</span><br><span class="line">import com.tencent.tinker.anno.DefaultLifeCycle;</span><br><span class="line">import com.tencent.tinker.lib.tinker.TinkerInstaller;</span><br><span class="line">import com.tencent.tinker.loader.app.ApplicationLike;</span><br><span class="line">import com.tencent.tinker.loader.shareutil.ShareConstants;</span><br><span class="line"></span><br><span class="line">@DefaultLifeCycle(application = &quot;.SimpleTinkerInApplication&quot;,</span><br><span class="line">        flags = ShareConstants.TINKER_ENABLE_ALL,</span><br><span class="line">        loadVerifyFlag =true)</span><br><span class="line">public class SimpleTinkerInApplicationLike extends ApplicationLike &#123;</span><br><span class="line">    public SimpleTinkerInApplicationLike(Application application, int tinkerFlags, boolean tinkerLoadVerifyFlag, long applicationStartElapsedTime, long applicationStartMillisTime, Intent tinkerResultIntent) &#123;</span><br><span class="line">        super(application, tinkerFlags, tinkerLoadVerifyFlag, applicationStartElapsedTime, applicationStartMillisTime, tinkerResultIntent);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    @Override</span><br><span class="line">    public void onBaseContextAttached(Context base) &#123;</span><br><span class="line">        super.onBaseContextAttached(base);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    @Override</span><br><span class="line">    public void onCreate() &#123;</span><br><span class="line">        super.onCreate();</span><br><span class="line">        TinkerInstaller.install(this);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<p>在manifest中标明同时 加上权限</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line">&lt;?xml version=&quot;1.0&quot; encoding=&quot;utf-8&quot;?&gt;</span><br><span class="line">&lt;manifest xmlns:android=&quot;http://schemas.android.com/apk/res/android&quot;</span><br><span class="line">          package=&quot;com.anlaiye.swt.tinkertest&quot;&gt;</span><br><span class="line"></span><br><span class="line">    &lt;application</span><br><span class="line">        android:name=&quot;.SimpleTinkerInApplication&quot;</span><br><span class="line">        android:allowBackup=&quot;true&quot;</span><br><span class="line">        android:icon=&quot;@mipmap/ic_launcher&quot;</span><br><span class="line">        android:label=&quot;@string/app_name&quot;</span><br><span class="line">        android:supportsRtl=&quot;true&quot;</span><br><span class="line">        android:theme=&quot;@style/AppTheme&quot;&gt;</span><br><span class="line">        &lt;activity android:name=&quot;.MainActivity&quot;&gt;</span><br><span class="line">            &lt;intent-filter&gt;</span><br><span class="line">                &lt;action android:name=&quot;android.intent.action.MAIN&quot;/&gt;</span><br><span class="line"></span><br><span class="line">                &lt;category android:name=&quot;android.intent.category.LAUNCHER&quot;/&gt;</span><br><span class="line">            &lt;/intent-filter&gt;</span><br><span class="line">        &lt;/activity&gt;</span><br><span class="line">        &lt;meta-data</span><br><span class="line">            android:name=&quot;TINKER_ID&quot;</span><br><span class="line">            android:value=&quot;id_171717&quot; /&gt;</span><br><span class="line">    &lt;/application&gt;</span><br><span class="line"></span><br><span class="line">    &lt;uses-permission android:name=&quot;android.permission.WRITE_EXTERNAL_STORAGE&quot; /&gt;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">&lt;/manifest&gt;</span><br></pre></td></tr></table></figure>
-<p>手动设置一下tinker_id<br>接下来开始测试<br>修改xml文件<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line">&lt;?xml version=&quot;1.0&quot; encoding=&quot;utf-8&quot;?&gt;</span><br><span class="line">&lt;LinearLayout</span><br><span class="line">    xmlns:android=&quot;http://schemas.android.com/apk/res/android&quot;</span><br><span class="line">    xmlns:tools=&quot;http://schemas.android.com/tools&quot;</span><br><span class="line">    android:layout_width=&quot;match_parent&quot;</span><br><span class="line">    android:layout_height=&quot;match_parent&quot;</span><br><span class="line">    android:orientation=&quot;vertical&quot;</span><br><span class="line">    tools:context=&quot;com.anlaiye.swt.test.MainActivity&quot;&gt;</span><br><span class="line"></span><br><span class="line">    &lt;TextView</span><br><span class="line">        android:layout_width=&quot;wrap_content&quot;</span><br><span class="line">        android:layout_height=&quot;wrap_content&quot;</span><br><span class="line">        android:text=&quot;第一次&quot;/&gt;</span><br><span class="line"></span><br><span class="line">    &lt;Button</span><br><span class="line">        android:onClick=&quot;loadPatch&quot;</span><br><span class="line">        android:layout_width=&quot;wrap_content&quot;</span><br><span class="line">        android:layout_height=&quot;wrap_content&quot;</span><br><span class="line">        android:text=&quot;更新&quot;/&gt;</span><br><span class="line">&lt;/LinearLayout&gt;</span><br></pre></td></tr></table></figure></p>
-<p>mainactivity<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line">package com.anlaiye.swt.test;</span><br><span class="line"></span><br><span class="line">import android.os.Environment;</span><br><span class="line">import android.support.v7.app.AppCompatActivity;</span><br><span class="line">import android.os.Bundle;</span><br><span class="line">import android.util.Log;</span><br><span class="line">import android.view.View;</span><br><span class="line"></span><br><span class="line">import com.tencent.tinker.lib.tinker.TinkerInstaller;</span><br><span class="line"></span><br><span class="line">public class MainActivity extends AppCompatActivity &#123;</span><br><span class="line"></span><br><span class="line">    @Override</span><br><span class="line">    protected void onCreate(Bundle savedInstanceState) &#123;</span><br><span class="line">        super.onCreate(savedInstanceState);</span><br><span class="line">        setContentView(R.layout.activity_main);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">    public void loadPatch(View view) &#123;</span><br><span class="line">        TinkerInstaller.onReceiveUpgradePatch(getApplicationContext(),</span><br><span class="line">                Environment.getExternalStorageDirectory().getAbsolutePath() + &quot;/patch_signed.apk&quot;);</span><br><span class="line">        Log.d(&quot;swt&quot;, Environment.getExternalStorageDirectory().getAbsolutePath());</span><br><span class="line"></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<p>接下来下载命令行工具<br><a href="https://github.com/Tencent/tinker/tree/master/tinker-build/tinker-patch-cli/tool_output" target="_blank" rel="noopener">https://github.com/Tencent/tinker/tree/master/tinker-build/tinker-patch-cli/tool_output</a><br>全部copy带同一个文件夹，<br>然后是生成jar文件，点开build.gradle可以看到<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">// copy the jar to work directory</span><br><span class="line">task buildTinkerSdk(type: Copy, dependsOn: [build, jar]) &#123;</span><br><span class="line">    group = &quot;tinker&quot;</span><br><span class="line">    from(&apos;build/libs&apos;) &#123;</span><br><span class="line">        include &apos;*.jar&apos;</span><br><span class="line">        exclude &apos;*-javadoc.jar&apos;</span><br><span class="line">        exclude &apos;*-sources.jar&apos;</span><br><span class="line">    &#125;</span><br><span class="line">    from(&apos;./tool_output&apos;) &#123;</span><br><span class="line">        include &apos;*.*&apos;</span><br><span class="line">    &#125;</span><br><span class="line">    into(rootProject.file(&quot;buildSdk/build&quot;))</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<p>这里有一段生成jar的脚本<br>在androidStudio中Terminal 里面切换到tinker-patch-cli目录下，然后执行gradle buildTinkerSdk命令，即可生成Jar包。<br>然后拿到了所有的工具了<br>开始打包<br>首先运行项目，拿到old.apk和mapping文件<br>将mapping 文件copy到proguard-rules.pro同目录，然后在proguard中输入<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">-applymapping mapping.txt</span><br></pre></td></tr></table></figure></p>
-<p>这是为了确保下次生成的apk和第一次生成的用的是同一个mapping<br>修改textview，随便修改点代码，不要运行，直接build出apk拿到新的apk<br>然后把old.apk new.apk放到前面下载的工具的同一个目录<br>进入tinker_config.xml文件<br>修改<loader value="com.anlaiye.swt.gradletest.SimpleTinkerInApplication"><br>为你自己的报名加application</loader></p>
-<p>接下来cmd进入命令行，进入所在的目录<br>输入<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">java -jar tinker-patch-cli-1.7.7.jar -old old.apk -new new.apk -config tinker_config.xml -out output</span><br></pre></td></tr></table></figure></p>
-<p>在目录下会多出一个output文件夹，里面有patch文件<br><img src="http://img.blog.csdn.net/20170314095458161?watermark/2/text/aHR0cDovL2Jsb2cuY3Nkbi5uZXQvcXFfMTU1Mjc3MDk=/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70/gravity/SouthEast" alt="这里写图片描述"><br>整体的目录结构如下<br>拿出patch导入你的手机sd卡最外层目录，点击APP里面的更新按钮，textview变化为你第二次修改的<br>成功<br>代码地址<br><a href="http://download.csdn.net/detail/qq_15527709/9780203" target="_blank" rel="noopener">http://download.csdn.net/detail/qq_15527709/9780203</a></p>
-
-      
-
-      
-    </div>
-    <div class="article-info article-info-index">
-      
-      
-      
-
-      
-        <p class="article-more-link">
-          <a class="article-more-a" href="/2018/03/12/tniker热修复命令行接入/">展开全文 >></a>
-        </p>
-      
-
-      
-      <div class="clearfix"></div>
-    </div>
-  </div>
-</article>
-
-<aside class="wrap-side-operation">
-    <div class="mod-side-operation">
-        
-        <div class="jump-container" id="js-jump-container" style="display:none;">
-            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
-                <i class="icon-font icon-back"></i>
-            </a>
-            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
-                <i class="icon-font icon-plane jump-plane"></i>
-            </div>
-        </div>
-        
-        
-    </div>
-</aside>
-
-
-
-
-  
-    <article id="post-一行代码操作数据库GreenDao" class="article article-type-post  article-index" itemscope itemprop="blogPost">
+            <article id="post-一行代码操作数据库GreenDao" class="article article-type-post " itemscope itemprop="blogPost">
   <div class="article-inner">
     
     <div class="article-entry" itemprop="articleBody">
@@ -499,6 +162,27 @@
       
 
       
+        <div class="page-reward">
+          <a href="javascript:;" class="page-reward-btn tooltip-top">
+            <div class="tooltip tooltip-east">
+            <span class="tooltip-item">
+              赏
+            </span>
+            <span class="tooltip-content">
+              <span class="tooltip-text">
+                <span class="tooltip-inner">
+                  <p class="reward-p"><i class="icon icon-quo-left"></i>谢谢你请我吃糖果<i class="icon icon-quo-right"></i></p>
+                  <div class="reward-box">
+                    
+                    
+                  </div>
+                </span>
+              </span>
+            </span>
+          </div>
+          </a>
+        </div>
+      
     </div>
     <div class="article-info article-info-index">
       
@@ -506,16 +190,84 @@
       
 
       
-        <p class="article-more-link">
-          <a class="article-more-a" href="/2018/03/12/一行代码操作数据库GreenDao/">展开全文 >></a>
-        </p>
-      
 
+      
+        
+<div class="share-btn share-icons tooltip-left">
+  <div class="tooltip tooltip-east">
+    <span class="tooltip-item">
+      <a href="javascript:;" class="share-sns share-outer">
+        <i class="icon icon-share"></i>
+      </a>
+    </span>
+    <span class="tooltip-content">
+      <div class="share-wrap">
+        <div class="share-icons">
+          <a class="weibo share-sns" href="javascript:;" data-type="weibo">
+            <i class="icon icon-weibo"></i>
+          </a>
+          <a class="weixin share-sns wxFab" href="javascript:;" data-type="weixin">
+            <i class="icon icon-weixin"></i>
+          </a>
+          <a class="qq share-sns" href="javascript:;" data-type="qq">
+            <i class="icon icon-qq"></i>
+          </a>
+          <a class="douban share-sns" href="javascript:;" data-type="douban">
+            <i class="icon icon-douban"></i>
+          </a>
+          <a class="qzone share-sns" href="javascript:;" data-type="qzone">
+            <i class="icon icon-qzone"></i>
+          </a>
+          <a class="facebook share-sns" href="javascript:;" data-type="facebook">
+            <i class="icon icon-facebook"></i>
+          </a>
+          <a class="twitter share-sns" href="javascript:;" data-type="twitter">
+            <i class="icon icon-twitter"></i>
+          </a>
+          <a class="google share-sns" href="javascript:;" data-type="google">
+            <i class="icon icon-google"></i>
+          </a>
+        </div>
+      </div>
+    </span>
+  </div>
+</div>
+
+<div class="page-modal wx-share js-wx-box">
+    <a class="close js-modal-close" href="javascript:;"><i class="icon icon-close"></i></a>
+    <p>扫一扫，分享到微信</p>
+    <div class="wx-qrcode">
+      <img src="//pan.baidu.com/share/qrcode?url=http://yoursite.com/2018/03/12/一行代码操作数据库GreenDao/" alt="微信分享二维码">
+    </div>
+</div>
+
+<div class="mask js-mask"></div>
       
       <div class="clearfix"></div>
     </div>
   </div>
 </article>
+
+  
+<nav id="article-nav">
+  
+    <a href="/2018/03/12/tniker热修复命令行接入/" id="article-nav-newer" class="article-nav-link-wrap">
+      <i class="icon-circle-left"></i>
+      <div class="article-nav-title">
+        
+          (no title)
+        
+      </div>
+    </a>
+  
+  
+    <a href="/2018/03/12/漂亮的viewpager画廊效果/" id="article-nav-older" class="article-nav-link-wrap">
+      <div class="article-nav-title"></div>
+      <i class="icon-circle-right"></i>
+    </a>
+  
+</nav>
+
 
 <aside class="wrap-side-operation">
     <div class="mod-side-operation">
@@ -536,218 +288,34 @@
 
 
 
-  
-    <article id="post-漂亮的viewpager画廊效果" class="article article-type-post  article-index" itemscope itemprop="blogPost">
-  <div class="article-inner">
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <p>首先看下效果图和整个项目的结构<br><img src="http://upload-images.jianshu.io/upload_images/7568660-e94dc20ae03944a6.gif?imageMogr2/auto-orient/strip" alt=""></p>
-<p><img src="http://upload-images.jianshu.io/upload_images/7568660-7f221c02394eca20.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
-<p>很简单的一个项目，这也是我在简书写的第一个项目，虽然简单，但是我觉得很漂亮</p>
-<p>现在开始分析代码</p>
-<p>首先看下MainActivity的代码<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br></pre></td><td class="code"><pre><span class="line">public class MainActivity extends AppCompatActivity &#123;</span><br><span class="line">    private int pagerWidth;</span><br><span class="line">    private ViewPager mViewPager;</span><br><span class="line">    private LinearLayout mNumLayout;//小圆点的layout</span><br><span class="line">    private List&lt;String&gt; imgList; //图片资源list</span><br><span class="line">    private RelativeLayout ll_main; //viewpager的父布局</span><br><span class="line"></span><br><span class="line">    @Override</span><br><span class="line">    protected void onCreate(Bundle savedInstanceState) &#123;</span><br><span class="line">        super.onCreate(savedInstanceState);</span><br><span class="line">        setContentView(R.layout.activity_main);</span><br><span class="line">        ll_main = (RelativeLayout) findViewById(R.id.activity_main);</span><br><span class="line">        mViewPager = (ViewPager) findViewById(R.id.viewPager);</span><br><span class="line">        mNumLayout = (LinearLayout) findViewById(R.id.bottom_layout);</span><br><span class="line">        mViewPager.setOffscreenPageLimit(3);</span><br><span class="line">        initImg();</span><br><span class="line">        //设置viewpager的宽度为屏幕的3/1 看起来比较好看,设置每个item的边距-10 34-43行</span><br><span class="line">        pagerWidth = (int) (getResources().getDisplayMetrics().widthPixels * 3.0f / 9.0f);</span><br><span class="line">        ViewGroup.LayoutParams lp = mViewPager.getLayoutParams();</span><br><span class="line">        if (lp == null) &#123;</span><br><span class="line">            lp = new ViewGroup.LayoutParams(pagerWidth, ViewGroup.LayoutParams.MATCH_PARENT);</span><br><span class="line">        &#125; else &#123;</span><br><span class="line">            lp.width = pagerWidth;</span><br><span class="line">        &#125;</span><br><span class="line">        mViewPager.setLayoutParams(lp);</span><br><span class="line">        mViewPager.setPageMargin(-10);</span><br><span class="line">        //将主布局的触摸事件分发给viewpager。这样整个界面都可以响应viewpager的滑动事件，</span><br><span class="line">        // 如果不设置，滑动事件只有中间viewpager的宽度区域</span><br><span class="line">        ll_main.setOnTouchListener(new View.OnTouchListener() &#123;</span><br><span class="line">            @Override</span><br><span class="line">            public boolean onTouch(View view, MotionEvent motionEvent) &#123;</span><br><span class="line">                return mViewPager.dispatchTouchEvent(motionEvent);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;);</span><br><span class="line">        //设置切换时候的动画效果</span><br><span class="line">        mViewPager.setPageTransformer(true, new GallyPageTransformer());</span><br><span class="line">        //这个就是设置adapter</span><br><span class="line">        mViewPager.setAdapter(new MyViewPagerAdapter(this, imgList));</span><br><span class="line">        //设置默认第二项，没有为什么就是看起来漂亮(从0开始的，所以是setcurrentitem(1))</span><br><span class="line">        mViewPager.setCurrentItem(1, true);</span><br><span class="line">        //设置下面的小点点默认第二项</span><br><span class="line">        mNumLayout.getChildAt(1).setBackgroundResource(R.drawable.msg_img_ellipse13x);</span><br><span class="line"></span><br><span class="line">        mViewPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() &#123;</span><br><span class="line">            @Override</span><br><span class="line">            public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) &#123;</span><br><span class="line"></span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">            @Override</span><br><span class="line">            public void onPageSelected(int position) &#123;</span><br><span class="line">                //首先还原所有的小点点</span><br><span class="line">                for (int i = 0; i &lt; mNumLayout.getChildCount(); i++) &#123;</span><br><span class="line">                    mNumLayout.getChildAt(i).setBackgroundResource(R.drawable.msg_img_ellipse33x);</span><br><span class="line">                &#125;</span><br><span class="line">                //在根据position拿到当前的位置，设置小点点的选中图片</span><br><span class="line">                Button currentBt = (Button) mNumLayout.getChildAt(position);</span><br><span class="line">                currentBt.setBackgroundResource(R.drawable.msg_img_ellipse13x);</span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">            @Override</span><br><span class="line">            public void onPageScrollStateChanged(int state) &#123;</span><br><span class="line"></span><br><span class="line">            &#125;</span><br><span class="line">        &#125;);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    //初始化数据</span><br><span class="line">    public void initImg() &#123;</span><br><span class="line">        imgList = new ArrayList&lt;&gt;();</span><br><span class="line">        imgList.add(&quot;https://timgsa.baidu.com/timg?image&amp;quality=80&amp;size=b9999_10000&amp;sec=1490984457722&amp;di=6d7d3e20e07fc833fc606089d01132e6&amp;imgtype=0&amp;src=http%3A%2F%2Fimgst.izhangheng.com%2F2016%2F08%2Fnight-beauty-girl-3.jpg&quot;);</span><br><span class="line">        imgList.add(&quot;https://ss0.bdstatic.com/70cFuHSh_Q1YnxGkpoWK1HF6hhy/it/u=2946550071,381041431&amp;fm=11&amp;gp=0.jpg&quot;);</span><br><span class="line">        imgList.add(&quot;https://timgsa.baidu.com/timg?image&amp;quality=80&amp;size=b9999_10000&amp;sec=1490984320392&amp;di=8290126f83c2a2c0d45be41e3f88a6d0&amp;imgtype=0&amp;src=http%3A%2F%2Ffile.mumayi.com%2Fforum%2F201307%2F19%2F152440r9ov9ololkzdcz7d.jpg&quot;);</span><br><span class="line">        Bitmap bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.msg_img_ellipse33x);</span><br><span class="line">        //根据图片list的大小，创建下面的小圆点按钮</span><br><span class="line">        for (int i = 0; i &lt; imgList.size(); i++) &#123;</span><br><span class="line">            Button bt = new Button(this);</span><br><span class="line">            LinearLayout.LayoutParams params1 = new LinearLayout.LayoutParams(bitmap.getWidth(), bitmap.getHeight());</span><br><span class="line">            params1.setMargins(dip2px(5), 0, 0, 0);</span><br><span class="line">            bt.setLayoutParams(params1);</span><br><span class="line">            bt.setBackgroundResource(R.drawable.msg_img_ellipse33x);</span><br><span class="line">            mNumLayout.addView(bt);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    //dip转px的小工具方法</span><br><span class="line">    public int dip2px(float dpValue) &#123;</span><br><span class="line">        final float scale = getResources().getDisplayMetrics().density;</span><br><span class="line">        return (int) (dpValue * scale + 0.5f);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<p>首先实例化控件，</p>
-<p>initImg();准备数据源</p>
-<p>34-43行//设置viewpager的宽度为屏幕的3/1 看起来比较好看,设置每个item的边距-10 </p>
-<p>46-51行//将主布局的触摸事件分发给viewpager。这样整个界面都可以响应viewpager的滑动事件，</p>
-<p>// 如果不设置，滑动事件只有中间viewpager的宽度区域</p>
-<p>接下来设置滑动事件，和适配器，我在代码上面都有注释，应该能看得懂</p>
-<p>接下来看下MyApplication<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">public class MyApplication extends Application &#123;</span><br><span class="line">    @Override</span><br><span class="line">    public void onCreate() &#123;</span><br><span class="line">        super.onCreate();</span><br><span class="line">        Fresco.initialize(this);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<p>viewpager的中间图片我用的是SimpleDraweeView</p>
-<p>所以在application中初始化了一下</p>
-<p>接下来看下viewpager的适配器<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br></pre></td><td class="code"><pre><span class="line">public class MyViewPagerAdapter extends PagerAdapter &#123;</span><br><span class="line"></span><br><span class="line">    private List&lt;String&gt; mlists;</span><br><span class="line">    private List&lt;View&gt; mSimpleDraweeViewList;</span><br><span class="line">    private HashMap&lt;Integer, View&gt; mViewIntegerHashMap = new HashMap&lt;&gt;();</span><br><span class="line">    private Context mContext;</span><br><span class="line"></span><br><span class="line">    public MyViewPagerAdapter(Context context, List&lt;String&gt; lists) &#123;</span><br><span class="line">        mContext = context;</span><br><span class="line">        this.mlists = lists;</span><br><span class="line">        mSimpleDraweeViewList = new ArrayList&lt;&gt;();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    @Override</span><br><span class="line">    public int getCount() &#123;</span><br><span class="line">        return mlists.size();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    @Override</span><br><span class="line">    public boolean isViewFromObject(View view, Object object) &#123;</span><br><span class="line">        return view == object;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    @Override</span><br><span class="line">    public Object instantiateItem(ViewGroup container, int position) &#123;</span><br><span class="line">        View view;</span><br><span class="line">        if (mViewIntegerHashMap.get(position) == null) &#123;</span><br><span class="line">            view = View.inflate(mContext, R.layout.main_top_viewpager_item, null);</span><br><span class="line">            SimpleDraweeView simpleDraweeView = (SimpleDraweeView) view.findViewById(R.id.main_top_viewpager_item_simpl);</span><br><span class="line">//            FrescoUtils.loadImage(mContext,mlists.get(position),simpleDraweeView,10,10,10,10);</span><br><span class="line">//            simpleDraweeView.setImageResource(R.mipmap.ic_launcher);</span><br><span class="line">            simpleDraweeView.setImageURI(mlists.get(position));</span><br><span class="line">            container.addView(view);</span><br><span class="line">            mSimpleDraweeViewList.add(view);</span><br><span class="line">            mViewIntegerHashMap.put(position, view);</span><br><span class="line">        &#125; else &#123;</span><br><span class="line">            view = mViewIntegerHashMap.get(position);</span><br><span class="line">        &#125;</span><br><span class="line">        return view;</span><br><span class="line">     /*   SimpleDraweeView simpleDraweeView = new SimpleDraweeView(mContext);</span><br><span class="line">        simpleDraweeView.setImageURI(mlists.get(position));</span><br><span class="line">        container.addView(simpleDraweeView);</span><br><span class="line">        mSimpleDraweeViewList.add(simpleDraweeView);</span><br><span class="line">        return simpleDraweeView;*/</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    @Override</span><br><span class="line">    public void destroyItem(ViewGroup container, int position, Object object) &#123;</span><br><span class="line">        container.removeView(mViewIntegerHashMap.get(position));</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<p>item布局为<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">&lt;?xml version=&quot;1.0&quot; encoding=&quot;utf-8&quot;?&gt;</span><br><span class="line">&lt;RelativeLayout xmlns:android=&quot;http://schemas.android.com/apk/res/android&quot;</span><br><span class="line">                xmlns:app=&quot;http://schemas.android.com/apk/res-auto&quot;</span><br><span class="line">                android:layout_width=&quot;wrap_content&quot;</span><br><span class="line">                android:layout_height=&quot;wrap_content&quot;</span><br><span class="line">    &gt;</span><br><span class="line"></span><br><span class="line">    &lt;com.facebook.drawee.view.SimpleDraweeView</span><br><span class="line">        android:id=&quot;@+id/main_top_viewpager_item_simpl&quot;</span><br><span class="line">        android:layout_width=&quot;150dp&quot;</span><br><span class="line">        android:layout_height=&quot;180dp&quot;</span><br><span class="line">        app:roundedCornerRadius=&quot;5dp&quot;</span><br><span class="line">        app:roundingBorderColor=&quot;#ffffffff&quot;</span><br><span class="line">        app:roundingBorderWidth=&quot;2dp&quot;/&gt;</span><br><span class="line">&lt;/RelativeLayout&gt;</span><br></pre></td></tr></table></figure></p>
-<p>item布局就是一个SimpleDraweeView</p>
-<p>主要看下instantiateItem方法</p>
-<p>首先判断if(mViewIntegerHashMap.get(position) ==null) {</p>
-<p>如果为空，就新建一个并且存起来，</p>
-<p>下次直接拿出对应postiion的view返回</p>
-<p>防止重复创建</p>
-<p>最后看下GallyPageTransformer代码<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br></pre></td><td class="code"><pre><span class="line">package cn.swt.m.btviewpager;</span><br><span class="line"></span><br><span class="line">import android.support.v4.view.ViewPager;</span><br><span class="line">import android.util.Log;</span><br><span class="line">import android.view.View;</span><br><span class="line"></span><br><span class="line">/**</span><br><span class="line"> * 介绍：这里写介绍</span><br><span class="line"> * 作者：sweet</span><br><span class="line"> * 邮箱：sunwentao@priemdu.cn</span><br><span class="line"> * 时间: 2017/7/19</span><br><span class="line"> */</span><br><span class="line">public class GallyPageTransformer implements ViewPager.PageTransformer &#123;</span><br><span class="line"></span><br><span class="line">    private static final float min_scale = 0.85f;</span><br><span class="line"></span><br><span class="line">    @Override</span><br><span class="line">    public void transformPage(View page, float position) &#123;</span><br><span class="line"></span><br><span class="line">        //最小的缩放比例</span><br><span class="line">        float scaleFactor = Math.max(min_scale, 1 - Math.abs(position));</span><br><span class="line"></span><br><span class="line">        //旋转的度数</span><br><span class="line">        float rotate = 40 * Math.abs(position);</span><br><span class="line">        Log.d(&quot;ss&quot;, &quot;position&quot; + position);</span><br><span class="line">        if (position &lt; 0) &#123;</span><br><span class="line">            //中间图片左边的图片</span><br><span class="line">            page.setScaleX(scaleFactor);</span><br><span class="line">            page.setScaleY(scaleFactor);</span><br><span class="line">            page.setRotationY(rotate);</span><br><span class="line">        &#125; else if (position &gt;= 0 &amp;&amp; position &lt; 1) &#123;</span><br><span class="line">            //中间图片</span><br><span class="line">            page.setScaleX(scaleFactor);</span><br><span class="line">            page.setScaleY(scaleFactor);</span><br><span class="line">            page.setRotationY(-rotate);</span><br><span class="line">        &#125; else if (position &gt;= 1) &#123;</span><br><span class="line">            //中间图片右边的图片</span><br><span class="line">            page.setScaleX(scaleFactor);</span><br><span class="line">            page.setScaleY(scaleFactor);</span><br><span class="line">            page.setRotationY(-rotate);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<p>主要是这个position会跟着滑动的距离进行改变，所以想要动画效果看起来很流畅，就得利用这个position函数</p>
-<p>代码不多 我都做了注释</p>
-<p>好像还差一个mainactivity的布局</p>
-<p>贴在这里<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br></pre></td><td class="code"><pre><span class="line">&lt;?xml version=&quot;1.0&quot; encoding=&quot;utf-8&quot;?&gt;</span><br><span class="line">&lt;RelativeLayout</span><br><span class="line">    xmlns:android=&quot;http://schemas.android.com/apk/res/android&quot;</span><br><span class="line">    xmlns:tools=&quot;http://schemas.android.com/tools&quot;</span><br><span class="line">    android:layout_width=&quot;match_parent&quot;</span><br><span class="line">    android:layout_height=&quot;match_parent&quot;</span><br><span class="line">   &gt;</span><br><span class="line"></span><br><span class="line">    &lt;RelativeLayout</span><br><span class="line">        android:id=&quot;@+id/activity_main&quot;</span><br><span class="line">        android:layout_width=&quot;match_parent&quot;</span><br><span class="line">        android:layout_height=&quot;200dp&quot;</span><br><span class="line">        android:clipChildren=&quot;false&quot;</span><br><span class="line">        android:layerType=&quot;software&quot;&gt;</span><br><span class="line">        &lt;ImageView</span><br><span class="line">            android:layout_width=&quot;match_parent&quot;</span><br><span class="line">            android:layout_height=&quot;200dp&quot;</span><br><span class="line">            android:scaleType=&quot;fitXY&quot;</span><br><span class="line">            android:src=&quot;@drawable/tooopen_sy_169964521661&quot;/&gt;</span><br><span class="line"></span><br><span class="line">        &lt;android.support.v4.view.ViewPager</span><br><span class="line">            android:id=&quot;@+id/viewPager&quot;</span><br><span class="line">            android:layout_centerInParent=&quot;true&quot;</span><br><span class="line">            android:layout_width=&quot;match_parent&quot;</span><br><span class="line">            android:layout_height=&quot;150dp&quot;</span><br><span class="line">            &gt;</span><br><span class="line">        &lt;/android.support.v4.view.ViewPager&gt;</span><br><span class="line"></span><br><span class="line">        &lt;LinearLayout</span><br><span class="line">            android:paddingTop=&quot;5dp&quot;</span><br><span class="line">            android:id=&quot;@+id/bottom_layout&quot;</span><br><span class="line">            android:layout_width=&quot;match_parent&quot;</span><br><span class="line">            android:layout_height=&quot;40dp&quot;</span><br><span class="line">            android:layout_alignParentBottom=&quot;true&quot;</span><br><span class="line">            android:gravity=&quot;center&quot;</span><br><span class="line">            android:orientation=&quot;horizontal&quot;&gt;</span><br><span class="line">        &lt;/LinearLayout&gt;</span><br><span class="line">    &lt;/RelativeLayout&gt;</span><br><span class="line">&lt;/RelativeLayout&gt;</span><br></pre></td></tr></table></figure></p>
-<p>代码下载地址<a href="http://download.csdn.net/download/qq_15527709/9960527" target="_blank" rel="noopener">http://download.csdn.net/download/qq_15527709/9960527</a></p>
 
-      
+<!-- 来必力City版安装代码 -->
+<div id="lv-container" data-id="city" data-uid="MTAyMC8zNTA1NS8xMTU5MA==">
+<script type="text/javascript">
+   (function(d, s) {
+       var j, e = d.getElementsByTagName(s)[0];
 
-      
-    </div>
-    <div class="article-info article-info-index">
-      
-      
-      
+       if (typeof LivereTower === 'function') { return; }
 
-      
-        <p class="article-more-link">
-          <a class="article-more-a" href="/2018/03/12/漂亮的viewpager画廊效果/">展开全文 >></a>
-        </p>
-      
+       j = d.createElement(s);
+       j.src = 'https://cdn-city.livere.com/js/embed.dist.js';
+       j.async = true;
 
-      
-      <div class="clearfix"></div>
-    </div>
-  </div>
-</article>
-
-<aside class="wrap-side-operation">
-    <div class="mod-side-operation">
-        
-        <div class="jump-container" id="js-jump-container" style="display:none;">
-            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
-                <i class="icon-font icon-back"></i>
-            </a>
-            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
-                <i class="icon-font icon-plane jump-plane"></i>
-            </div>
-        </div>
-        
-        
-    </div>
-</aside>
-
-
-
+       e.parentNode.insertBefore(j, e);
+   })(document, 'script');
+</script>
+<noscript>为正常使用来必力评论功能请激活JavaScript</noscript>
+</div>
+<!-- City版安装代码已完成 -->
 
   
-    <article id="post-tinker热修复gradle接入 " class="article article-type-post  article-index" itemscope itemprop="blogPost">
-  <div class="article-inner">
-    
-      <header class="article-header">
-        
   
-    <h1 itemprop="name">
-      <a class="article-title" href="/2018/03/12/tinker热修复gradle接入 /">tinker热修复gradle接入</a>
-    </h1>
   
 
-        
-        
-        <a href="/2018/03/12/tinker热修复gradle接入 /" class="archive-article-date">
-  	<time datetime="2018-03-12T09:48:16.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2018-03-12</time>
-</a>
-        
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <p>本篇文章已授权微信公众号 guolin_blog （郭霖）独家发布</p>
-<p>今天研究了一天的热修复，热修复，简单的来讲就是在不需要发包的情况下，修改你线上应用的bug，接入使用后对于我这种小白来说还是很神奇的，同时也考虑了一下，要不要接入我们的项目中，这样就不用因为一个小BUG而去再次发包了，不过，就算要接入项目中，也还有很多坑需要踩，tinker有俩种接入方式，一种命令行接入，一种是gradle接入，本篇只讲gradle接入，下篇我在补充命令行，主要用于自己做个记录，把踩得坑和感想写下来.<br>首先，基本的配置<br>在peoject的build中配置如下<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">dependencies &#123;</span><br><span class="line">        classpath &apos;com.android.tools.build:gradle:2.2.2&apos;</span><br><span class="line">        classpath &quot;com.tencent.tinker:tinker-patch-gradle-plugin:$&#123;TINKER_VERSION&#125;&quot;</span><br><span class="line">        // NOTE: Do not place your application dependencies here; they belong</span><br><span class="line">        // in the individual module build.gradle files</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure></p>
-<p>TINKER_VERSION需要在gradle.properties中进行配置<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">TINKER_VERSION=1.7.7</span><br></pre></td></tr></table></figure></p>
-        
-          <a class="article-more-a" href="/2018/03/12/tinker热修复gradle接入 /#more">more >></a>
-        
-      
-
-      
-    </div>
-    <div class="article-info article-info-index">
-      
-      
-      
-
-      
-        <p class="article-more-link">
-          <a class="article-more-a" href="/2018/03/12/tinker热修复gradle接入 /">展开全文 >></a>
-        </p>
-      
-
-      
-      <div class="clearfix"></div>
-    </div>
-  </div>
-</article>
-
-<aside class="wrap-side-operation">
-    <div class="mod-side-operation">
-        
-        <div class="jump-container" id="js-jump-container" style="display:none;">
-            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
-                <i class="icon-font icon-back"></i>
-            </a>
-            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
-                <i class="icon-font icon-plane jump-plane"></i>
-            </div>
-        </div>
-        
-        
-    </div>
-</aside>
-
-
-
-
-  
-    <article id="post-retrofit2+rxjava2封装" class="article article-type-post  article-index" itemscope itemprop="blogPost">
-  <div class="article-inner">
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2018/03/12/retrofit2+rxjava2封装/">retrofit2+rxjava2封装</a>
-    </h1>
   
 
-        
-        
-        <a href="/2018/03/12/retrofit2+rxjava2封装/" class="archive-article-date">
-  	<time datetime="2018-03-12T09:05:11.534Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2018-03-12</time>
-</a>
-        
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <p>最近看了很多的资料和retrofit2和rxjava2的封装，有一些感悟，所以写下来<br>这篇博客不讲retrofit2和rxjava2的用法，只讲封装<br>主要讲解<br>1，对后台返回的数据进行过滤，只拿data的数据<br>2，添加公用的请求头，和公共参数<br>3，添加log日志，对url,method,data打印log<br>首先看下最终的用法<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">RetrofitManager.getInstance().getTest().subscribe(new BaseObserver&lt;CateBean&gt;() &#123;</span><br><span class="line">         @Override</span><br><span class="line">         public void onHandleSuccess(CateBean cateBean) &#123;</span><br><span class="line"></span><br><span class="line">         &#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line">     &#125;);</span><br></pre></td></tr></table></figure></p>
-<p>用法还是很简单的，真正的数据bean会被basedata包装后过滤返回,</p>
-<p>大家都知道，一般后台返回的基础数据是<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">private String err_msg;</span><br><span class="line"> private int code;</span><br><span class="line">   private T data;</span><br></pre></td></tr></table></figure></p>
-        
-          <a class="article-more-a" href="/2018/03/12/retrofit2+rxjava2封装/#more">more >></a>
-        
-      
-
-      
-    </div>
-    <div class="article-info article-info-index">
-      
-      
-      
-
-      
-        <p class="article-more-link">
-          <a class="article-more-a" href="/2018/03/12/retrofit2+rxjava2封装/">展开全文 >></a>
-        </p>
-      
-
-      
-      <div class="clearfix"></div>
-    </div>
-  </div>
-</article>
-
-<aside class="wrap-side-operation">
-    <div class="mod-side-operation">
-        
-        <div class="jump-container" id="js-jump-container" style="display:none;">
-            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
-                <i class="icon-font icon-back"></i>
-            </a>
-            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
-                <i class="icon-font icon-plane jump-plane"></i>
-            </div>
-        </div>
-        
-        
-    </div>
-</aside>
-
-
-
-
   
+
   
 
 
@@ -770,8 +338,8 @@
     <script>
 	var yiliaConfig = {
 		mathjax: false,
-		isHome: true,
-		isPost: false,
+		isHome: false,
+		isPost: true,
 		isArchive: false,
 		isTag: false,
 		isCategory: false,
